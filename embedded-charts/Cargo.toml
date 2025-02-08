@@ -1,0 +1,8 @@
+[package]
+name = "embedded-charts"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+bon = { version = "3.3.2", default-features = false }
+embedded-graphics = { version = "0.8.1", features = ["defmt"] }
