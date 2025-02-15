@@ -1,10 +1,12 @@
 #![allow(dead_code)]
 use bon::builder;
 use embedded_graphics::draw_target::DrawTarget;
-use embedded_graphics::pixelcolor::Rgb565;
-use embedded_graphics::prelude::{PixelColor, Point, Primitive};
-use embedded_graphics::primitives::{Arc, Circle, Line, PrimitiveStyle};
+use embedded_graphics::prelude::{PixelColor, Point, Primitive, Size};
+use embedded_graphics::primitives::{Circle, Line, PrimitiveStyle};
 use embedded_graphics::Drawable;
+
+use crate::axis::Axis;
+use crate::scale_point;
 
 // TODO should the Line own the data (points) or should it take reference?
 // This leads to lifetime questions
@@ -16,10 +18,10 @@ where
 {
     #[builder(default = [None; SAMPLES], with = |points:[Point;SAMPLES]| points.map(|p| Some(p)))]
     points: [Option<Point>; SAMPLES],
-    #[builder(default = SAMPLES as i32)]
-    x_max: i32,
-    #[builder(default)]
-    x_min: i32,
+    #[builder(default = Axis::default_x_axis())]
+    x_axis: Axis<C>,
+    #[builder(default = Axis::default_y_axis())]
+    y_axis: Axis<C>,
     #[builder(default = 100)]
     y_max: i32,
     #[builder(default)]
@@ -47,6 +49,21 @@ where
     pub fn get_points(&self) -> &[Option<Point>] {
         &self.points
     }
+    /// Scale points to display coordinates. Should be called before drawing.
+    /// Or optionally scale the data before inserting outside of this struct
+    pub fn scale_points_to_display(&mut self, display_size: &Size) {
+        self.points = self.points.map(|point| match point {
+            Some(p) => Some(scale_point(
+                p,
+                display_size,
+                self.x_axis.min(),
+                self.x_axis.max(),
+                self.y_min,
+                self.y_max,
+            )),
+            None => None,
+        });
+    }
 }
 
 impl<C: Default> Default for LineChart<C> {
@@ -60,14 +77,13 @@ where
     C: PixelColor + Default,
 {
     type Color = C;
-
     type Output = ();
 
     fn draw<D>(&self, target: &mut D) -> Result<Self::Output, D::Error>
     where
         D: DrawTarget<Color = Self::Color>,
     {
-        let width = target.bounding_box().size.width;
+        self.x_axis.draw(target)?;
         let height = target.bounding_box().size.height;
         for w in self.points.windows(2) {
             if let (Some(mut p1), Some(mut p2)) = (w[0], w[1]) {

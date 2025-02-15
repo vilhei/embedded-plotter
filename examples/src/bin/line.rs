@@ -1,7 +1,7 @@
 #![no_std]
 #![no_main]
 
-use embedded_charts::line::LineChart;
+// use embedded_charts::line::LineChart;
 use esp_backtrace as _;
 
 use embedded_graphics::pixelcolor::Rgb565;
@@ -29,25 +29,27 @@ use static_cell::ConstStaticCell;
 
 static DISPLAY0_BUFFER: ConstStaticCell<[u8; 512]> = ConstStaticCell::new([0u8; 512]);
 
-const POINT_COUNT: usize = 10;
+const POINT_COUNT: usize = 5;
 
 #[entry]
 fn main() -> ! {
     let per = esp_hal::init(Default::default());
 
-    // let test_points: [Point; POINT_COUNT] = [
-    //     Point::new(5, 5),
-    //     Point::new(13, 5),
-    //     Point::new(20, 10),
-    //     Point::new(40, 20),
-    //     Point::new(100, 90),
-    // ];
+    let test_points: [Point; POINT_COUNT] = [
+        Point::new(5, 5),
+        Point::new(13, 5),
+        Point::new(20, 10),
+        Point::new(40, 20),
+        Point::new(100, 90),
+    ];
 
     let mut line_plot: LineChart<_, POINT_COUNT> = LineChart::builder()
         // .points(test_points)
         .line_color(Rgb565::WHITE)
         .point_color(Rgb565::RED)
         .line_width(2)
+        .y_max(36)
+        .x_max(100)
         .build();
 
     for i in 1..POINT_COUNT + 1 {
@@ -63,6 +65,10 @@ fn main() -> ! {
     );
 
     display.clear(Rgb565::BLACK).unwrap();
+    println!("{:?}", display.size());
+    line_plot.scale_points_to_display(&display.size());
+
+    println!("{:?}", line_plot.get_points());
     line_plot.draw(&mut display).unwrap();
     println!("Done");
 

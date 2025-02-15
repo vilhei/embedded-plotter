@@ -6,3 +6,7 @@ edition = "2021"
 [dependencies]
 bon = { version = "3.3.2", default-features = false }
 embedded-graphics = { version = "0.8.1", features = ["defmt"] }
+
+[dev-dependencies]
+test-case = "3.3.1"
+embedded-graphics-simulator = "0.7.0"
