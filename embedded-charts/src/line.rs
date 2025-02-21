@@ -1,7 +1,7 @@
 #![allow(dead_code)]
 use bon::builder;
 use embedded_graphics::draw_target::DrawTarget;
-use embedded_graphics::prelude::{PixelColor, Point, Primitive, Size};
+use embedded_graphics::prelude::{Dimensions, PixelColor, Point, Primitive, Size};
 use embedded_graphics::primitives::{Circle, Line, PrimitiveStyle};
 use embedded_graphics::Drawable;
 
@@ -22,10 +22,6 @@ where
     x_axis: Axis<'a, C>,
     #[builder(default = Axis::default_y_axis())]
     y_axis: Axis<'a, C>,
-    #[builder(default = 100)]
-    y_max: i32,
-    #[builder(default)]
-    y_min: i32,
     #[builder(default)]
     line_color: C,
     #[builder(default)]
@@ -53,17 +49,17 @@ where
 
     /// Scale points to display coordinates. Should be called before drawing.
     /// Or optionally scale the data before inserting outside of this struct
-    pub fn scale_points_to_display(&mut self, display_size: &Size) {
+    pub fn scale_points_to_display<D: Dimensions>(&mut self, display: &D) {
         self.points = self.points.map(|point| match point {
             Some(p) => Some(scale_point(
                 p,
-                display_size,
-                &Point::default(),
+                &display.bounding_box().size,
+                &self.x_axis.calculate_starting_coordinates(display),
                 // &self.x_axis.origin_offset,
                 self.x_axis.min,
                 self.x_axis.max,
-                self.y_min,
-                self.y_max,
+                self.y_axis.min,
+                self.y_axis.max,
             )),
             None => None,
         });

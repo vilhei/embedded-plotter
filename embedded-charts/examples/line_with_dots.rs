@@ -10,15 +10,10 @@ use embedded_graphics::{
 };
 use embedded_graphics_simulator::{OutputSettingsBuilder, SimulatorDisplay, Window};
 
-const POINT_COUNT: usize = 1000;
+const POINT_COUNT: usize = 100;
 
 fn main() {
     let mut display = SimulatorDisplay::<Rgb565>::new(Size::new(160, 128));
-    // let x_axis = Axis::default_x_axis();
-    let axis_origin = Point {
-        x: 4,
-        y: display.size().height as i32 - 4,
-    };
 
     let mut x_axis = Axis::builder()
         .max(POINT_COUNT as i32)
@@ -45,7 +40,6 @@ fn main() {
         .line_color(Rgb565::WHITE)
         .point_color(Rgb565::RED)
         .line_width(2)
-        .y_max(36)
         .x_axis(x_axis)
         .y_axis(y_axis)
         .show_points(false)
@@ -54,12 +48,12 @@ fn main() {
     for x in 0..POINT_COUNT {
         line_plot.push(Point {
             x: x as i32,
-            y: ((x as f32 * 0.01).sin() * 10.0 + 20.0) as i32,
+            y: ((x as f32 * 0.3).sin() * 10.0 + 20.0) as i32,
         })
     }
-    // println!("{:?}", line_plot.get_points());
+    println!("{:?}", line_plot.get_points());
 
-    line_plot.scale_points_to_display(&display.size());
+    line_plot.scale_points_to_display(&display);
     // println!("{:?}", line_plot.get_points());
     line_plot.draw(&mut display).unwrap();
     let output_settings = OutputSettingsBuilder::new().scale(3).build();

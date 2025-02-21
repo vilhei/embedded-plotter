@@ -29,7 +29,6 @@ where
     #[builder(default = 2)]
     line_width: u32,
     #[builder(default = [3,3], into, setters(vis = ""))]
-    /// In pixel coordinates of the display
     starting_point_offset: Point,
     #[builder(default)]
     show_legend: bool,
@@ -48,7 +47,7 @@ where
         let mut start_point = self.starting_point_offset;
         start_point.y = height as i32 - start_point.y;
 
-        const LEGEND_PADDING: i32 = 0;
+        // TODO merge horizontal and vertical if possible as much as possible
         match self.direction {
             Direction::Horizontal => {
                 if self.show_legend {
@@ -60,7 +59,6 @@ where
                     );
                     match legend_result {
                         Ok(Some(r)) => {
-                            // start_point.x += r.top_left.x;
                             start_point.y -= r.top_left.y.abs_diff(start_point.y) as i32
                                 + self.line_width as i32
                                 + 1;
@@ -179,7 +177,6 @@ where
         let mut start_point = self.starting_point_offset;
         start_point.y = height as i32 - start_point.y;
 
-        const LEGEND_PADDING: i32 = 0;
         match self.direction {
             Direction::Horizontal => {
                 if self.show_legend {
@@ -254,14 +251,13 @@ pub enum Direction {
 /// Helper type for having one vertical and one horizontal axis with same starting point
 pub struct AxisPair {}
 
-pub fn calibrate_starting_points<C1, C2, D>(
-    horizontal: &mut Axis<C1>,
-    vertical: &mut Axis<C2>,
+pub fn calibrate_starting_points<Color, D>(
+    horizontal: &mut Axis<Color>,
+    vertical: &mut Axis<Color>,
     display: &D,
 ) -> Result<(), ()>
 where
-    C1: Default,
-    C2: Default,
+    Color: Default,
     D: Dimensions,
 {
     match horizontal.direction {
