@@ -12,16 +12,16 @@ use crate::scale_point;
 // This leads to lifetime questions
 
 #[derive(Debug, bon::Builder)]
-pub struct LineChart<C, const SAMPLES: usize = 5>
+pub struct LineChart<'a, C, const SAMPLES: usize = 5>
 where
     C: Default,
 {
     #[builder(default = [None; SAMPLES], with = |points:[Point;SAMPLES]| points.map(|p| Some(p)))]
     points: [Option<Point>; SAMPLES],
     #[builder(default = Axis::default_x_axis())]
-    x_axis: Axis<C>,
+    x_axis: Axis<'a, C>,
     #[builder(default = Axis::default_y_axis())]
-    y_axis: Axis<C>,
+    y_axis: Axis<'a, C>,
     #[builder(default = 100)]
     y_max: i32,
     #[builder(default)]
@@ -38,7 +38,7 @@ where
     show_points: bool,
 }
 
-impl<C, const SAMPLES: usize> LineChart<C, SAMPLES>
+impl<C, const SAMPLES: usize> LineChart<'_, C, SAMPLES>
 where
     C: Default,
 {
@@ -46,9 +46,11 @@ where
         self.points.rotate_right(1);
         self.points[0] = Some(new_point);
     }
+
     pub fn get_points(&self) -> &[Option<Point>] {
         &self.points
     }
+
     /// Scale points to display coordinates. Should be called before drawing.
     /// Or optionally scale the data before inserting outside of this struct
     pub fn scale_points_to_display(&mut self, display_size: &Size) {
@@ -56,8 +58,10 @@ where
             Some(p) => Some(scale_point(
                 p,
                 display_size,
-                self.x_axis.min(),
-                self.x_axis.max(),
+                &Point::default(),
+                // &self.x_axis.origin_offset,
+                self.x_axis.min,
+                self.x_axis.max,
                 self.y_min,
                 self.y_max,
             )),
@@ -66,13 +70,13 @@ where
     }
 }
 
-impl<C: Default> Default for LineChart<C> {
+impl<C: Default> Default for LineChart<'_, C> {
     fn default() -> Self {
         Self::builder().build()
     }
 }
 
-impl<C, const SAMPLES: usize> Drawable for LineChart<C, SAMPLES>
+impl<C, const SAMPLES: usize> Drawable for LineChart<'_, C, SAMPLES>
 where
     C: PixelColor + Default,
 {
@@ -84,6 +88,7 @@ where
         D: DrawTarget<Color = Self::Color>,
     {
         self.x_axis.draw(target)?;
+        self.y_axis.draw(target)?;
         let height = target.bounding_box().size.height;
         for w in self.points.windows(2) {
             if let (Some(mut p1), Some(mut p2)) = (w[0], w[1]) {

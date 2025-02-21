@@ -1,5 +1,9 @@
 #![no_std]
 use embedded_graphics::prelude::{Point, Size};
+use u8g2_fonts::{
+    fonts::{u8g2_font_4x6_tf, u8g2_font_4x6_tn, u8g2_font_6x13_mr},
+    FontRenderer,
+};
 
 pub mod axis;
 pub mod bar;
@@ -7,18 +11,28 @@ pub mod bar_line;
 pub mod line;
 pub mod scatter;
 
+pub const DEFAULT_FONT: u8g2_fonts::FontRenderer = FontRenderer::new::<u8g2_font_4x6_tf>();
+// pub const DEFAULT_FONT: u8g2_fonts::FontRenderer = FontRenderer::new::<u8g2_font_6x13_mr>();
+
 /// Scales point from chart scale to display scale (e.g. to pixel coordinates for drawing)
 pub fn scale_point(
     p: Point,
     display_size: &Size,
+    origin: &Point,
     x_min: i32,
     x_max: i32,
     y_min: i32,
     y_max: i32,
 ) -> Point {
     // TODO change arguments to some kind of struct config or similar to ease use
-    let new_x = scale_value(p.x, x_min, x_max, 0, display_size.width as i32);
-    let new_y = scale_value(p.y, y_min, y_max, 0, display_size.height as i32);
+    let new_x = scale_value(p.x, x_min, x_max, origin.x, display_size.width as i32);
+    let new_y = scale_value(
+        p.y,
+        y_min,
+        y_max,
+        display_size.height as i32 - origin.y,
+        display_size.height as i32,
+    );
     Point::new(new_x, new_y)
 }
 

@@ -4,8 +4,9 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-bon = { version = "3.3.2", default-features = false }
+bon = { version = "3.3.2", default-features = false, features = ["experimental-getter"] }
 embedded-graphics = { version = "0.8.1", features = ["defmt"] }
+u8g2-fonts = "0.5.2"
 
 [dev-dependencies]
 test-case = "3.3.1"

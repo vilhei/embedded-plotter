@@ -171,6 +171,7 @@ dependencies = [
  "embedded-graphics",
  "embedded-graphics-simulator",
  "test-case",
+ "u8g2-fonts",
 ]
 
 [[package]]
@@ -515,6 +516,15 @@ dependencies = [
  "proc-macro2",
  "quote",
  "syn",
+]
+
+[[package]]
+name = "u8g2-fonts"
+version = "0.5.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "132e15484caa39440cc9d6317c1f1980a13259234e630db2270ea2a2b1e5c4a2"
+dependencies = [
+ "embedded-graphics-core",
 ]
 
 [[package]]
